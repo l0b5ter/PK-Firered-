@@ -1,0 +1,59 @@
+//-------------------------------------
+//Preperations
+//-------------------------------------
+#dynamic 0x800000
+#define cAttack 0x1D //Change this value to use another attack
+
+//-------------------------------------
+//Main Script
+//-------------------------------------
+#org @Main
+lockall //Lock everything from moving
+checkattack cAttack //Stores the first Pokémon who knows the attack into the variable 0x800D
+compare 0x800D 0x06 //Makes sure a Pokémon knows the attack...
+if 0x01 goto @NotKnown //If the value is 6 then no Pokémon knows the attack
+setanimation 0x00 0x800D //The Pokémon animation is set with the Pokémon who knows the attack
+bufferpartypokemon 0x00 0x800D //Puts the Pokémon who knows the attack into [buffer1]
+bufferattack 0x01 cAttack //Puts the attack name into [buffer2]
+msgbox @Message1 0x05 //A Yes/No box appears with the message
+compare 0x800D 0x00 //Checks in "No" was selected
+if 0x01 goto @DoNotWant //If it was, quit
+msgbox @Message2 0x04 //"[buffer1] used [buffer2]!" >> Keep open
+closeonkeypress //Close the msgbox when a key is pressed
+doanimation 0x25 //Shows the Pokémon animation
+waitstate //Waits for the animation to complete
+setvar 0x8004 0x01 //Set up to shake screen
+setvar 0x8005 0x01
+setvar 0x8006 0x0C
+setvar 0x8007 0x02
+special 0x136 //Shake screen
+pause 0x20 //Wait 1~ second
+special 0xAB //Call a random battle from the "Tree" section of wild Pokémon
+compare 0x800D 0x00 //Checks if a wild battle happened
+if 0x1 goto @DoNotWant //If not, quit
+waitstate //Wait for the battle to complete
+releaseall //Allow the player to move freely again
+end //End the script
+
+//-------------------------------------
+//Sub Scripts
+//-------------------------------------
+#org @NotKnown
+msgbox @Message3 0x03
+end
+
+#org @DoNotWant
+releaseall
+end
+
+//-------------------------------------
+//Messages
+//-------------------------------------
+#org @Message1
+= This tree may contain a Pokemon.\nUse the move [buffer2]?
+
+#org @Message2
+= [buffer1] used [buffer2]!
+
+#org @Message3
+= This tree may contain a Pokemon.\nIt may be able to be knocked out.
